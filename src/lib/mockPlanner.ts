@@ -1,28 +1,12 @@
 import type { DayPlan, TravelPreference, TripPlan, TripTier } from '../types'
 import { findCityByName } from '../data/cityRepository'
+import { computeCost } from './costModel'
 import { scoreActivity, preferenceNotes } from './preferences'
 
 export const TIER_LABELS: Record<TripTier, string> = {
   economy: 'Ekonomik',
   standard: 'Standart',
   luxury: 'Lüks',
-}
-
-/**
- * Per-person daily spend baseline by tier. Kept for the standalone Budget
- * Calculator screen (city-independent estimate).
- */
-export const TIER_DAILY_BASE: Record<TripTier, number> = {
-  economy: 60,
-  standard: 130,
-  luxury: 280,
-}
-
-/** Multiplier applied to a city's average daily budget, by travel tier. */
-const TIER_MULT: Record<TripTier, number> = {
-  economy: 0.7,
-  standard: 1,
-  luxury: 1.9,
 }
 
 /** Fallback content when the typed city isn't in the database. */
@@ -98,8 +82,13 @@ export function generatePlan(input: GeneratePlanInput): TripPlan {
     evening: cyc(acts, i * 3 + 2),
   }))
 
-  const dailyCost = Math.round(source.dailyCost * TIER_MULT[input.tier])
-  const estimatedTotal = dailyCost * days
+  // Shared cost engine (single traveler for the planner).
+  const cost = computeCost({
+    cityDailyCost: source.dailyCost,
+    days,
+    tier: input.tier,
+    people: 1,
+  })
   const budget = Math.max(0, Math.round(input.budget) || 0)
 
   return {
@@ -107,10 +96,10 @@ export function generatePlan(input: GeneratePlanInput): TripPlan {
     tier: input.tier,
     startDate: input.startDate,
     days: dayPlans,
-    estimatedTotal,
-    dailyCost,
+    estimatedTotal: cost.estimatedTotal,
+    dailyCost: cost.perPersonDaily,
     budget,
-    withinBudget: budget === 0 ? true : estimatedTotal <= budget,
+    withinBudget: budget === 0 ? true : cost.estimatedTotal <= budget,
     transport: source.transport,
     bestSeason: source.bestSeason,
     rainyPlan: source.rainyAlternatives,

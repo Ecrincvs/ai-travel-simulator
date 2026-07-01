@@ -52,8 +52,8 @@ export function BudgetCalculatorPage({ onBack }: BudgetCalculatorPageProps) {
   // estimateBudget clamps internally, so the panel stays valid while the user
   // is mid-typing; the inline warnings tell them what to fix.
   const est = useMemo(
-    () => estimateBudget({ days, people, budget, tier }),
-    [days, people, budget, tier],
+    () => estimateBudget({ city, days, people, budget, tier }),
+    [city, days, people, budget, tier],
   )
 
   const categories = [
