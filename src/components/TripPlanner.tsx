@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { generatePlan, TIER_LABELS } from '../lib/mockPlanner'
+import { TIER_LABELS } from '../lib/mockPlanner'
+import { generateTripPlan } from '../services/tripPlannerService'
 import { formatUSD } from '../lib/budget'
 import {
   adaptPlan,
@@ -78,10 +79,13 @@ export function TripPlanner({
     setLoading(true)
     setPlan(null)
     setPlanSaved(false)
-    // Simulate an AI request; replace with a real call later.
+    // Goes through the AI service layer (mock today; real provider later).
+    // The brief delay keeps the "AI hazırlıyor…" feedback smooth.
     window.setTimeout(() => {
-      setPlan(generatePlan({ city, days, budget, tier }))
-      setLoading(false)
+      generateTripPlan({ city, days, budget, tier })
+        .then((result) => setPlan(result))
+        .catch((err) => console.error('[TripPlanner] plan failed:', err))
+        .finally(() => setLoading(false))
     }, 650)
   }
 
