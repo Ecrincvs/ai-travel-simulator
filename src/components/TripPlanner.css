@@ -164,10 +164,15 @@
   color: var(--text);
   font-size: 15px;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+.tp-field input:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
 }
 .tp-field input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 .tp-field input[aria-invalid='true'] {
   border-color: #f87171;
@@ -204,6 +209,7 @@
 .tp-pref:hover {
   color: var(--text);
   border-color: var(--accent);
+  transform: translateY(-1px);
 }
 .tp-pref.is-active {
   background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
@@ -290,6 +296,7 @@
 }
 .tp-segmented button:hover {
   color: var(--text);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 .tp-segmented button.is-active {
   background: var(--accent-grad);
@@ -298,6 +305,8 @@
 }
 
 .tp-submit {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -311,11 +320,29 @@
   font-size: 15px;
   font-weight: 700;
   box-shadow: 0 14px 30px -14px var(--accent);
-  transition: transform 0.15s ease, filter 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+.tp-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.38) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
 }
 .tp-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   filter: brightness(1.06);
+  box-shadow: 0 20px 38px -14px var(--accent);
+}
+.tp-submit:hover:not(:disabled)::before {
+  transform: translateX(130%);
 }
 .tp-submit:disabled {
   opacity: 0.7;
@@ -391,11 +418,26 @@
 
 /* Cost hero */
 .tp-cost {
+  position: relative;
+  overflow: hidden;
   padding: 24px;
   border-radius: 22px;
   background: var(--accent-grad);
   color: #fff;
   box-shadow: 0 20px 44px -22px var(--accent);
+}
+.tp-cost::before {
+  content: '';
+  position: absolute;
+  inset: -42% -18% auto auto;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), transparent 62%);
+  pointer-events: none;
+}
+.tp-cost > * {
+  position: relative;
+  z-index: 1;
 }
 .tp-cost-top {
   display: flex;
@@ -494,10 +536,13 @@
   border-radius: 18px;
   background: var(--surface);
   border: 1px solid var(--border-soft);
-  transition: border-color 0.16s ease;
+  transition: border-color 0.18s ease, transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .tp-info-card:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px -26px color-mix(in srgb, var(--accent) 50%, transparent);
 }
 .tp-info-head {
   display: flex;
@@ -552,19 +597,55 @@
   color: var(--text);
 }
 .tp-days {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding-left: 36px;
+}
+/* Timeline spine — main day-by-day program only */
+.tp-days::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 45%, var(--border)),
+    var(--border)
+  );
+}
+/* Timeline node per day (scoped: weather-adapted day cards untouched) */
+.tp-days > .tp-day {
+  position: relative;
+}
+.tp-days > .tp-day::before {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+  left: -27px;
+  top: 24px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent-grad);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 .tp-day {
   padding: 18px 20px;
   border-radius: 18px;
   background: var(--surface);
   border: 1px solid var(--border-soft);
-  transition: border-color 0.16s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
+/* No transform on hover — keeps the card aligned with its timeline node */
 .tp-day:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  box-shadow: 0 16px 34px -26px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .tp-day-head {
   display: flex;
@@ -598,6 +679,11 @@
   background: var(--surface-2);
   border: 1px solid var(--border-soft);
   border-left-width: 3px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.tp-slot-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -18px rgba(0, 0, 0, 0.45);
 }
 .tp-slot-block p {
   margin: 8px 0 0;
@@ -1317,5 +1403,41 @@
   }
   .tp-saved-list {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Premium micro-interactions ---------- */
+.tp-copy {
+  position: relative;
+  overflow: hidden;
+}
+.tp-copy::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.tp-copy:hover::before {
+  transform: translateX(130%);
+}
+.tp-copy.is-copied::before {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-plan {
+    animation: none;
+  }
+  .tp-submit::before,
+  .tp-copy::before {
+    transition: none;
   }
 }
