@@ -13,6 +13,12 @@ import {
 } from '../lib/weather'
 import { buildRouteStops, formatDuration } from '../lib/routePreview'
 import { buildPlanText } from '../lib/planText'
+import {
+  todayISODate,
+  formatTripDate,
+  formatTripRange,
+  dayDateISO,
+} from '../lib/dates'
 import { TRAVEL_PREFERENCES, PREF_BY_KEY } from '../lib/preferences'
 import type {
   DayPlan,
@@ -61,6 +67,7 @@ export function TripPlanner({
   const [city, setCity] = useState(initialPlan?.city ?? initialCity)
   const [daysStr, setDaysStr] = useState(String(initialPlan?.days.length ?? 4))
   const [budgetStr, setBudgetStr] = useState(String(initialPlan?.budget ?? 1500))
+  const [startDate, setStartDate] = useState(initialPlan?.startDate ?? '')
   const [tier, setTier] = useState<TripTier>(initialPlan?.tier ?? 'standard')
   const [plan, setPlan] = useState<TripPlan | null>(initialPlan ?? null)
   const [loading, setLoading] = useState(false)
@@ -80,6 +87,7 @@ export function TripPlanner({
   // Validation — surfaces warnings instead of silently correcting input.
   const days = Number(daysStr)
   const budget = Number(budgetStr)
+  const today = todayISODate()
   const cityValid = city.trim().length > 0
   const daysValid =
     daysStr.trim() !== '' && Number.isInteger(days) && days >= 1 && days <= 14
@@ -88,7 +96,8 @@ export function TripPlanner({
     Number.isFinite(budget) &&
     budget >= 0 &&
     budget <= 100000
-  const canGenerate = cityValid && daysValid && budgetValid
+  const dateValid = startDate !== '' && startDate >= today
+  const canGenerate = cityValid && daysValid && budgetValid && dateValid
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -99,7 +108,7 @@ export function TripPlanner({
     // Goes through the AI service layer (mock today; real provider later).
     // The brief delay keeps the "AI hazırlıyor…" feedback smooth.
     window.setTimeout(() => {
-      generateTripPlan({ city, days, budget, tier, preferences: prefs })
+      generateTripPlan({ city, days, budget, tier, startDate, preferences: prefs })
         .then((result) => setPlan(result))
         .catch((err) => console.error('[TripPlanner] plan failed:', err))
         .finally(() => setLoading(false))
@@ -168,6 +177,26 @@ export function TripPlanner({
               />
               {!cityValid && (
                 <span className="tp-warn">Bir şehir adı gir.</span>
+              )}
+            </label>
+
+            <label className="tp-field">
+              <span className="tp-label">
+                <CalendarIcon width={15} height={15} /> Başlangıç tarihi
+              </span>
+              <input
+                type="date"
+                min={today}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                aria-invalid={!dateValid}
+              />
+              {!dateValid && (
+                <span className="tp-warn">
+                  {startDate === '' || startDate >= today
+                    ? 'Başlangıç tarihi seç.'
+                    : 'Geçmiş tarih seçilemez.'}
+                </span>
               )}
             </label>
 
@@ -398,7 +427,7 @@ function PlanResult({
       </div>
       <div className="tp-days">
         {plan.days.map((d) => (
-          <DayCard key={d.day} day={d} />
+          <DayCard key={d.day} day={d} startDate={plan.startDate} />
         ))}
       </div>
 
@@ -467,6 +496,12 @@ function TripSummary({ plan }: { plan: TripPlan }) {
           <p>Planı metin olarak kopyala veya dışa aktar.</p>
         </div>
       </div>
+
+      {plan.startDate && (
+        <div className="tp-recap-range">
+          📅 {formatTripRange(plan.startDate, plan.days.length)}
+        </div>
+      )}
 
       <div className="tp-recap-grid">
         {stats.map((s) => (
@@ -673,7 +708,12 @@ function WeatherModule({ plan }: { plan: TripPlan }) {
 
           <div className="tp-weather-days">
             {adaptation.days.map((d) => (
-              <DayCard key={d.day} day={d} emphasize={adaptation.emphasize} />
+              <DayCard
+                key={d.day}
+                day={d}
+                startDate={plan.startDate}
+                emphasize={adaptation.emphasize}
+              />
             ))}
           </div>
         </div>
@@ -684,9 +724,11 @@ function WeatherModule({ plan }: { plan: TripPlan }) {
 
 function DayCard({
   day,
+  startDate,
   emphasize = [],
 }: {
   day: DayPlan
+  startDate?: string
   emphasize?: SlotKey[]
 }) {
   const slots: { key: SlotKey; label: string; text: string }[] = [
@@ -695,9 +737,15 @@ function DayCard({
     { key: 'evening', label: 'Akşam', text: day.evening },
   ]
   const hasEmphasis = emphasize.length > 0
+  const dateLabel = startDate
+    ? formatTripDate(dayDateISO(startDate, day.day - 1))
+    : ''
   return (
     <article className="tp-day">
-      <div className="tp-day-badge">{day.day}. Gün</div>
+      <div className="tp-day-head">
+        <span className="tp-day-badge">{day.day}. Gün</span>
+        {dateLabel && <span className="tp-day-date">📅 {dateLabel}</span>}
+      </div>
       <div className="tp-day-slots">
         {slots.map((s) => {
           const emph = emphasize.includes(s.key)

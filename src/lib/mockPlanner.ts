@@ -63,6 +63,8 @@ export interface GeneratePlanInput {
   days: number
   budget: number
   tier: TripTier
+  /** Trip start date as YYYY-MM-DD. */
+  startDate?: string
   /** Optional travel preferences used to re-rank activities. */
   preferences?: TravelPreference[]
 }
@@ -103,6 +105,7 @@ export function generatePlan(input: GeneratePlanInput): TripPlan {
   return {
     city: input.city.trim(),
     tier: input.tier,
+    startDate: input.startDate,
     days: dayPlans,
     estimatedTotal,
     dailyCost,

@@ -2,6 +2,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { TIER_LABELS } from '../lib/mockPlanner'
 import { formatUSD } from '../lib/budget'
+import { formatTripRange } from '../lib/dates'
 import type { SavedPlan } from '../types'
 import {
   CompassIcon,
@@ -145,6 +146,16 @@ export function SavedTripsPage({ onBack, onOpen, onNew }: SavedTripsPageProps) {
                 <span className="st-tier">{TIER_LABELS[plan.tier]}</span>
 
                 <div className="st-meta">
+                  <div className="st-meta-row">
+                    <span className="st-meta-label">
+                      <CalendarIcon width={14} height={14} /> Tarih
+                    </span>
+                    <span className="st-meta-value">
+                      {plan.startDate
+                        ? formatTripRange(plan.startDate, plan.days.length)
+                        : 'Belirtilmemiş'}
+                    </span>
+                  </div>
                   <div className="st-meta-row">
                     <span className="st-meta-label">
                       <CalendarIcon width={14} height={14} /> Gün sayısı

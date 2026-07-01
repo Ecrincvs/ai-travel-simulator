@@ -1,6 +1,7 @@
 import type { TripPlan } from '../types'
 import { TIER_LABELS } from './mockPlanner'
 import { formatUSD } from './budget'
+import { dayDateISO, formatTripDate, formatTripRange } from './dates'
 
 /** Serialize a plan to a shareable plain-text block (for clipboard / export). */
 export function buildPlanText(plan: TripPlan): string {
@@ -12,11 +13,17 @@ export function buildPlanText(plan: TripPlan): string {
       plan.estimatedTotal,
     )}`,
   )
+  if (plan.startDate) {
+    lines.push(`📅  ${formatTripRange(plan.startDate, plan.days.length)}`)
+  }
   lines.push('')
 
   lines.push('📅  GÜN GÜN PROGRAM')
   for (const d of plan.days) {
-    lines.push(`${d.day}. Gün`)
+    const dateLabel = plan.startDate
+      ? formatTripDate(dayDateISO(plan.startDate, d.day - 1))
+      : ''
+    lines.push(dateLabel ? `${d.day}. Gün — ${dateLabel}` : `${d.day}. Gün`)
     lines.push(`   • Sabah: ${d.morning}`)
     lines.push(`   • Öğlen: ${d.noon}`)
     lines.push(`   • Akşam: ${d.evening}`)

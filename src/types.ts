@@ -51,6 +51,8 @@ export interface DayPlan {
 export interface TripPlan {
   city: string
   tier: TripTier
+  /** Trip start date as YYYY-MM-DD (optional for older saved plans) */
+  startDate?: string
   days: DayPlan[]
   /** AI estimated total cost in USD */
   estimatedTotal: number
