@@ -1,82 +1,91 @@
-import { useState } from 'react'
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom'
 import { HomePage } from './components/HomePage'
 import { TripPlanner } from './components/TripPlanner'
 import { SavedTripsPage } from './components/SavedTripsPage'
 import { BudgetCalculatorPage } from './components/BudgetCalculatorPage'
+import { useLocalStorage } from './hooks/useLocalStorage'
 import type { SavedPlan } from './types'
 
-type View = 'home' | 'planner' | 'saved' | 'budget'
-
-function App() {
-  const [view, setView] = useState<View>('home')
-  const [plannerCity, setPlannerCity] = useState('')
-  const [loadedPlan, setLoadedPlan] = useState<SavedPlan | undefined>(undefined)
-  const [returnTo, setReturnTo] = useState<View>('home')
-
-  const goToPlanner = (city = '') => {
-    setLoadedPlan(undefined)
-    setPlannerCity(city)
-    setReturnTo('home')
-    setView('planner')
-    window.scrollTo({ top: 0 })
+/**
+ * "Back" that mirrors the browser's back button when there's in-app history,
+ * and falls back to Home on a direct load / first-entry refresh so the user is
+ * never stranded outside the app.
+ */
+function useAppBack() {
+  const navigate = useNavigate()
+  return () => {
+    const idx = (window.history.state?.idx as number | undefined) ?? 0
+    if (idx > 0) navigate(-1)
+    else navigate('/')
   }
+}
 
-  const openSaved = () => {
-    setView('saved')
-    window.scrollTo({ top: 0 })
-  }
-
-  const openBudget = () => {
-    setView('budget')
-    window.scrollTo({ top: 0 })
-  }
-
-  const openSavedPlan = (plan: SavedPlan) => {
-    setLoadedPlan(plan)
-    setReturnTo('saved')
-    setView('planner')
-    window.scrollTo({ top: 0 })
-  }
-
-  const newPlanFromSaved = () => {
-    setLoadedPlan(undefined)
-    setPlannerCity('')
-    setReturnTo('saved')
-    setView('planner')
-    window.scrollTo({ top: 0 })
-  }
-
-  if (view === 'planner') {
-    return (
-      <TripPlanner
-        key={loadedPlan?.id ?? 'new'}
-        initialCity={plannerCity}
-        initialPlan={loadedPlan}
-        onBack={() => setView(returnTo)}
-      />
-    )
-  }
-
-  if (view === 'saved') {
-    return (
-      <SavedTripsPage
-        onBack={() => setView('home')}
-        onOpen={openSavedPlan}
-        onNew={newPlanFromSaved}
-      />
-    )
-  }
-
-  if (view === 'budget') {
-    return <BudgetCalculatorPage onBack={() => setView('home')} />
-  }
-
+function HomeRoute() {
+  const navigate = useNavigate()
   return (
     <HomePage
-      onPlan={goToPlanner}
-      onOpenSaved={openSaved}
-      onOpenBudget={openBudget}
+      onPlan={(city) =>
+        navigate(
+          city ? `/planner?city=${encodeURIComponent(city)}` : '/planner',
+        )
+      }
+      onOpenSaved={() => navigate('/saved')}
+      onOpenBudget={() => navigate('/budget')}
     />
+  )
+}
+
+function PlannerRoute() {
+  const back = useAppBack()
+  const [params] = useSearchParams()
+  const [plans] = useLocalStorage<SavedPlan[]>('ats-plans', [])
+  const planId = params.get('plan') ?? ''
+  const city = params.get('city') ?? ''
+  const initialPlan = planId
+    ? plans.find((p) => p.id === planId)
+    : undefined
+  return (
+    <TripPlanner
+      key={planId || city || 'new'}
+      initialCity={city}
+      initialPlan={initialPlan}
+      onBack={back}
+    />
+  )
+}
+
+function SavedRoute() {
+  const navigate = useNavigate()
+  const back = useAppBack()
+  return (
+    <SavedTripsPage
+      onBack={back}
+      onOpen={(plan) => navigate(`/planner?plan=${encodeURIComponent(plan.id)}`)}
+      onNew={() => navigate('/planner')}
+    />
+  )
+}
+
+function BudgetRoute() {
+  const back = useAppBack()
+  return <BudgetCalculatorPage onBack={back} />
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomeRoute />} />
+      <Route path="/planner" element={<PlannerRoute />} />
+      <Route path="/saved" element={<SavedRoute />} />
+      <Route path="/budget" element={<BudgetRoute />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
