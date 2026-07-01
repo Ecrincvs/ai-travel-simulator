@@ -13,9 +13,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px clamp(18px, 5vw, 56px);
-  background: color-mix(in srgb, var(--bg) 76%, transparent);
-  backdrop-filter: blur(12px);
+  padding: 15px clamp(18px, 5vw, 56px);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
   border-bottom: 1px solid var(--border-soft);
 }
 .home-brand {
@@ -26,16 +26,21 @@
 .home-brand-mark {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
   background: var(--accent-grad);
   color: #fff;
-  box-shadow: 0 8px 20px -8px var(--accent);
+  box-shadow: 0 10px 24px -8px var(--accent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.home-brand:hover .home-brand-mark {
+  transform: rotate(-8deg) scale(1.05);
+  box-shadow: 0 14px 30px -8px var(--accent);
 }
 .home-brand-text {
   font-size: clamp(16px, 2.4vw, 19px);
-  font-weight: 700;
+  font-weight: 750;
   letter-spacing: -0.02em;
 }
 .home-nav-actions {
@@ -55,12 +60,18 @@
   color: var(--text);
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.16s ease;
+  transition: transform 0.16s ease, border-color 0.16s ease,
+    color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 .home-saved-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
   background: var(--surface-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -14px var(--accent);
+}
+.home-saved-btn:active {
+  transform: translateY(0);
 }
 .home-theme-btn {
   display: grid;
@@ -71,11 +82,12 @@
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  transition: all 0.16s ease;
+  transition: all 0.18s ease;
 }
 .home-theme-btn:hover {
   border-color: var(--accent);
   background: var(--surface-hover);
+  transform: translateY(-2px) rotate(12deg);
 }
 
 @media (max-width: 480px) {
@@ -93,70 +105,151 @@
 .home-main {
   flex: 1;
   width: 100%;
-  max-width: 1120px;
+  max-width: 1160px;
   margin: 0 auto;
-  padding: clamp(28px, 5vw, 64px) clamp(18px, 5vw, 40px);
+  padding: clamp(32px, 5vw, 72px) clamp(18px, 5vw, 40px);
   display: flex;
   flex-direction: column;
-  gap: clamp(44px, 7vw, 80px);
+  gap: clamp(52px, 7vw, 92px);
 }
 
 /* ---------- Hero ---------- */
 .home-hero {
+  position: relative;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-top: clamp(8px, 3vw, 28px);
+}
+/* Premium aurora glow behind the hero (contained — no overflow) */
+.home-hero::before {
+  content: '';
+  position: absolute;
+  inset: -70px 8% auto 8%;
+  height: 380px;
+  background: radial-gradient(
+      62% 100% at 50% 0%,
+      color-mix(in srgb, var(--accent) 42%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      40% 80% at 78% 12%,
+      color-mix(in srgb, var(--accent-2) 32%, transparent),
+      transparent 70%
+    );
+  filter: blur(34px);
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 0;
+  animation: home-aurora 9s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+/* Subtle dot-grid texture behind the hero, faded toward the edges */
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: -8px 0 auto;
+  height: 320px;
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--text) 20%, transparent) 1px,
+    transparent 1.6px
+  );
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(58% 70% at 50% 28%, #000, transparent 76%);
+  mask-image: radial-gradient(58% 70% at 50% 28%, #000, transparent 76%);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+.home-hero > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes home-aurora {
+  from {
+    transform: translate3d(-14px, 0, 0) scale(1);
+    opacity: 0.68;
+  }
+  to {
+    transform: translate3d(14px, -8px, 0) scale(1.05);
+    opacity: 0.82;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-hero::before {
+    animation: none;
+  }
 }
 .home-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 15px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
-  color: color-mix(in srgb, var(--accent) 72%, var(--text));
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  color: color-mix(in srgb, var(--accent) 74%, var(--text));
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--accent) 65%, transparent);
+  backdrop-filter: blur(4px);
 }
 .home-title {
-  margin: 20px 0 12px;
-  font-size: clamp(30px, 6.5vw, 58px);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
-  background: linear-gradient(180deg, var(--text), color-mix(in srgb, var(--text) 62%, var(--accent)));
+  margin: 22px 0 14px;
+  font-size: clamp(32px, 6.6vw, 62px);
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.03;
+  background: linear-gradient(
+    180deg,
+    var(--text),
+    color-mix(in srgb, var(--text) 58%, var(--accent))
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .home-subtitle {
-  margin: 0 0 34px;
+  margin: 0 0 38px;
   font-size: clamp(15px, 2.4vw, 18px);
+  font-weight: 450;
   color: var(--text-muted);
   max-width: 540px;
+  line-height: 1.6;
 }
 
 .home-search {
   width: 100%;
-  max-width: 620px;
+  max-width: 660px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 9px 9px 18px;
-  border-radius: 18px;
+  padding: 10px 10px 10px 20px;
+  border-radius: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  transition: border-color 0.16s ease;
+  box-shadow: 0 24px 60px -34px rgba(20, 24, 45, 0.5), var(--shadow);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.home-search:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 }
 .home-search:focus-within {
   border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 24px 60px -30px color-mix(in srgb, var(--accent) 45%, transparent);
+  transform: translateY(-1px);
 }
 .home-search-icon {
   color: var(--text-dim);
   flex-shrink: 0;
+  transition: color 0.18s ease;
+}
+.home-search:focus-within .home-search-icon {
+  color: var(--accent);
 }
 .home-search input {
   flex: 1;
@@ -165,42 +258,82 @@
   outline: none;
   background: transparent;
   color: var(--text);
-  font-size: 16px;
-  padding: 10px 4px;
+  font-size: 16.5px;
+  font-weight: 500;
+  padding: 11px 4px;
 }
 .home-search input::placeholder {
   color: var(--text-dim);
+  font-weight: 400;
 }
 .home-search-btn {
-  padding: 12px 26px;
+  position: relative;
+  overflow: hidden;
+  padding: 13px 28px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--accent-grad);
   color: #fff;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 12px 26px -14px var(--accent);
-  transition: transform 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 14px 30px -14px var(--accent);
+  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+}
+/* Sheen sweep on hover */
+.home-search-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
 }
 .home-search-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 20px 38px -14px var(--accent);
+}
+.home-search-btn:hover::before {
+  transform: translateX(130%);
+}
+.home-search-btn:active {
+  transform: translateY(0);
 }
 
 /* ---------- Sections ---------- */
 .home-section-head {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 34px;
 }
 .home-section-head h2 {
+  position: relative;
+  display: inline-block;
   margin: 0;
-  font-size: clamp(22px, 3.5vw, 30px);
-  font-weight: 750;
+  padding-bottom: 12px;
+  font-size: clamp(23px, 3.5vw, 32px);
+  font-weight: 800;
   letter-spacing: -0.03em;
 }
+.home-section-head h2::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 46px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent-grad);
+}
 .home-section-head p {
-  margin: 8px 0 0;
+  margin: 12px 0 0;
   font-size: 15px;
   color: var(--text-muted);
 }
@@ -210,15 +343,15 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 48px 24px;
+  padding: 52px 24px;
   text-align: center;
   color: var(--text-muted);
   border: 1px dashed var(--border);
-  border-radius: var(--radius);
+  border-radius: 22px;
   background: var(--surface);
 }
 .home-empty-emoji {
-  font-size: 34px;
+  font-size: 36px;
   margin-bottom: 4px;
 }
 .home-empty p {
@@ -231,7 +364,7 @@
   font-size: 13.5px;
 }
 .home-empty-btn {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 10px 20px;
   border-radius: 11px;
   border: 1px solid var(--border);
@@ -244,53 +377,98 @@
 .home-empty-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  transform: translateY(-1px);
 }
 
 /* ---------- City cards ---------- */
 .home-cities {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 22px;
 }
 .home-city {
-  border-radius: 20px;
+  position: relative;
+  border-radius: 22px;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border-soft);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s ease, border-color 0.22s ease;
 }
 .home-city:hover {
-  transform: translateY(-5px);
-  border-color: var(--accent);
-  box-shadow: var(--shadow);
+  transform: translateY(-7px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: 0 28px 52px -28px color-mix(in srgb, var(--accent) 55%, transparent),
+    var(--shadow);
 }
 .home-city-banner {
   position: relative;
-  height: 120px;
+  height: 134px;
   display: grid;
   place-items: center;
+  overflow: hidden;
+}
+/* Depth: soft top highlight + bottom shade over the gradient */
+.home-city-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12),
+    transparent 32%,
+    rgba(0, 0, 0, 0.2)
+  );
+  pointer-events: none;
+}
+/* Sheen sweep across the banner on card hover */
+.home-city-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 62%
+  );
+  transform: translateX(-125%);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.home-city:hover .home-city-banner::before {
+  transform: translateX(125%);
 }
 .home-city-emoji {
-  font-size: 50px;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+  position: relative;
+  z-index: 1;
+  font-size: 54px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+  transition: transform 0.25s ease;
+}
+.home-city:hover .home-city-emoji {
+  transform: scale(1.1) translateY(-2px);
 }
 .home-city-rating {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  z-index: 1;
+  top: 11px;
+  right: 11px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 9px;
+  padding: 5px 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: #ffd66b;
   font-size: 12px;
   font-weight: 700;
 }
 .home-city-body {
-  padding: 16px 18px 18px;
+  padding: 17px 18px 18px;
 }
 .home-city-head {
   display: flex;
@@ -300,18 +478,19 @@
 }
 .home-city-head h3 {
   margin: 0;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
 }
 .home-city-head span {
   font-size: 12.5px;
   color: var(--text-dim);
 }
 .home-city-desc {
-  margin: 8px 0 16px;
+  margin: 8px 0 18px;
   font-size: 13px;
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 .home-city-foot {
   display: flex;
@@ -320,8 +499,8 @@
   gap: 8px;
 }
 .home-city-price {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 .home-city-price small {
@@ -330,68 +509,91 @@
   color: var(--text-dim);
 }
 .home-city-btn {
-  padding: 8px 16px;
+  padding: 9px 17px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 11px;
   background: var(--surface-2);
   color: var(--text);
   font-size: 13px;
-  font-weight: 600;
-  transition: all 0.16s ease;
+  font-weight: 650;
+  transition: transform 0.16s ease, background 0.16s ease,
+    border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
 }
 .home-city-btn:hover {
   background: var(--accent-grad);
   border-color: transparent;
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px var(--accent);
+}
+.home-city-btn:active {
+  transform: translateY(0);
 }
 
 /* ---------- Feature cards ---------- */
 .home-features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: 22px;
 }
 .home-feature {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 28px 24px;
-  border-radius: 20px;
+  padding: 30px 26px;
+  border-radius: 22px;
   background: var(--surface);
   border: 1px solid var(--border-soft);
   color: inherit;
   font: inherit;
   cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
 }
 .home-feature:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent);
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--accent) 6%, var(--surface)),
+    var(--surface)
+  );
+  box-shadow: 0 26px 50px -30px color-mix(in srgb, var(--accent) 45%, transparent),
+    var(--shadow);
+}
+.home-feature:active {
+  transform: translateY(-2px);
 }
 .home-feature-cta {
   display: inline-block;
-  margin-top: 14px;
+  margin-top: 16px;
   font-size: 13.5px;
   font-weight: 700;
   color: var(--accent);
-  transition: transform 0.16s ease;
+  transition: transform 0.18s ease;
 }
 .home-feature:hover .home-feature-cta {
-  transform: translateX(3px);
+  transform: translateX(4px);
 }
 .home-feature-icon {
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 15px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   background: color-mix(in srgb, currentColor 15%, transparent);
-  margin-bottom: 18px;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  margin-bottom: 20px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.home-feature:hover .home-feature-icon {
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 12px 26px -10px currentColor;
 }
 .home-feature h3 {
   margin: 0 0 8px;
-  font-size: 17.5px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 750;
   letter-spacing: -0.02em;
 }
 .home-feature p {
@@ -408,13 +610,13 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 26px clamp(18px, 5vw, 56px);
+  padding: 28px clamp(18px, 5vw, 56px);
   border-top: 1px solid var(--border-soft);
   font-size: 13px;
   color: var(--text-dim);
 }
 .home-footer span:first-child {
-  font-weight: 600;
+  font-weight: 650;
   color: var(--text-muted);
 }
 
@@ -435,10 +637,11 @@
   .home-search {
     flex-wrap: wrap;
     padding: 12px;
+    border-radius: 18px;
   }
   .home-search input {
     width: 100%;
-    padding: 6px 8px;
+    padding: 8px 8px;
   }
   .home-search-btn {
     width: 100%;
