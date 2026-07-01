@@ -1,5 +1,6 @@
-import type { DayPlan, TripPlan, TripTier } from '../types'
+import type { DayPlan, TravelPreference, TripPlan, TripTier } from '../types'
 import { findCityByName } from '../data/cityRepository'
+import { scoreActivity, preferenceNotes } from './preferences'
 
 export const TIER_LABELS: Record<TripTier, string> = {
   economy: 'Ekonomik',
@@ -62,6 +63,8 @@ export interface GeneratePlanInput {
   days: number
   budget: number
   tier: TripTier
+  /** Optional travel preferences used to re-rank activities. */
+  preferences?: TravelPreference[]
 }
 
 /**
@@ -74,8 +77,18 @@ export function generatePlan(input: GeneratePlanInput): TripPlan {
   const days = Math.max(1, Math.min(14, Math.round(input.days) || 1))
   const city = findCityByName(input.city)
   const source = city ?? DEFAULT_CITY
+  const prefs = input.preferences ?? []
 
-  const acts = source.activities
+  // Re-rank the city's activities so preference-matching ones surface first
+  // (stable: higher score first, original order as tiebreak).
+  const acts =
+    prefs.length > 0
+      ? source.activities
+          .map((a, i) => ({ a, i, s: scoreActivity(a, prefs) }))
+          .sort((x, y) => y.s - x.s || x.i - y.i)
+          .map((o) => o.a)
+      : source.activities
+
   const dayPlans: DayPlan[] = Array.from({ length: days }, (_, i) => ({
     day: i + 1,
     morning: cyc(acts, i * 3),
@@ -98,5 +111,7 @@ export function generatePlan(input: GeneratePlanInput): TripPlan {
     transport: source.transport,
     bestSeason: source.bestSeason,
     rainyPlan: source.rainyAlternatives,
+    preferences: prefs,
+    preferenceNotes: preferenceNotes(prefs),
   }
 }

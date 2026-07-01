@@ -13,7 +13,14 @@ import {
 } from '../lib/weather'
 import { buildRouteStops, formatDuration } from '../lib/routePreview'
 import { buildPlanText } from '../lib/planText'
-import type { DayPlan, SavedPlan, TripPlan, TripTier } from '../types'
+import { TRAVEL_PREFERENCES, PREF_BY_KEY } from '../lib/preferences'
+import type {
+  DayPlan,
+  SavedPlan,
+  TravelPreference,
+  TripPlan,
+  TripTier,
+} from '../types'
 import {
   CompassIcon,
   MapPinIcon,
@@ -59,6 +66,16 @@ export function TripPlanner({
   const [loading, setLoading] = useState(false)
   const [planSaved, setPlanSaved] = useState(Boolean(initialPlan))
   const [, setSavedPlans] = useLocalStorage<SavedPlan[]>('ats-plans', [])
+  // Travel preferences persist across sessions as the user's default.
+  const [prefs, setPrefs] = useLocalStorage<TravelPreference[]>(
+    'ats-preferences',
+    [],
+  )
+
+  const togglePref = (key: TravelPreference) =>
+    setPrefs((prev) =>
+      prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key],
+    )
 
   // Validation — surfaces warnings instead of silently correcting input.
   const days = Number(daysStr)
@@ -82,7 +99,7 @@ export function TripPlanner({
     // Goes through the AI service layer (mock today; real provider later).
     // The brief delay keeps the "AI hazırlıyor…" feedback smooth.
     window.setTimeout(() => {
-      generateTripPlan({ city, days, budget, tier })
+      generateTripPlan({ city, days, budget, tier, preferences: prefs })
         .then((result) => setPlan(result))
         .catch((err) => console.error('[TripPlanner] plan failed:', err))
         .finally(() => setLoading(false))
@@ -212,6 +229,24 @@ export function TripPlanner({
               </div>
             </div>
 
+            <div className="tp-field">
+              <span className="tp-label">Seyahat tercihleri (opsiyonel)</span>
+              <div className="tp-prefs">
+                {TRAVEL_PREFERENCES.map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    className={`tp-pref ${prefs.includes(p.key) ? 'is-active' : ''}`}
+                    aria-pressed={prefs.includes(p.key)}
+                    onClick={() => togglePref(p.key)}
+                  >
+                    <span className="tp-pref-emoji">{p.emoji}</span>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button
               type="submit"
               className="tp-submit"
@@ -332,6 +367,29 @@ function PlanResult({
           <p>{plan.bestSeason}</p>
         </div>
       </div>
+
+      {/* Applied preferences */}
+      {plan.preferences && plan.preferences.length > 0 && (
+        <div className="tp-prefs-applied">
+          <div className="tp-prefs-applied-head">
+            🎯 Tercihlerine Göre Uyarlandı
+          </div>
+          <div className="tp-prefs-applied-chips">
+            {plan.preferences.map((p) => (
+              <span className="tp-pref-chip" key={p}>
+                {PREF_BY_KEY[p].emoji} {PREF_BY_KEY[p].label}
+              </span>
+            ))}
+          </div>
+          {plan.preferenceNotes && plan.preferenceNotes.length > 0 && (
+            <ul className="tp-prefs-applied-notes">
+              {plan.preferenceNotes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Day by day */}
       <div className="tp-days-head">

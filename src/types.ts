@@ -32,6 +32,15 @@ export interface City {
 
 export type TripTier = 'economy' | 'standard' | 'luxury'
 
+export type TravelPreference =
+  | 'museum'
+  | 'food'
+  | 'nature'
+  | 'shopping'
+  | 'nightlife'
+  | 'family'
+  | 'lowwalk'
+
 export interface DayPlan {
   day: number
   morning: string
@@ -53,6 +62,10 @@ export interface TripPlan {
   bestSeason: string
   /** Indoor / bad-weather backup suggestions */
   rainyPlan: string[]
+  /** Travel preferences that shaped this plan (optional for older saved plans) */
+  preferences?: TravelPreference[]
+  /** Human-readable notes derived from the selected preferences */
+  preferenceNotes?: string[]
 }
 
 export interface SavedPlan extends TripPlan {
